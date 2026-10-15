@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-slate-950 text-slate-100 select-none">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flipbook Studio - 3D Cubito & Image Import Edition</title>
+  
+  <!-- Favicon para la barra de pestañas -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23818cf8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'/><polyline points='3.27 6.96 12 12.01 20.73 6.96'/><line x1='12' y1='22.08' x2='12' y2='12'/></svg>">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- GIF.js (Robust GIF Encoder bundle via CDN) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    code, .font-mono { font-family: 'JetBrains Mono', monospace; }
+    
+    /* Transparent Checkerboard Canvas Background */
+    .canvas-bg {
+      background-color: #ffffff;
+      background-image: linear-gradient(45deg, #e2e8f0 25%, transparent 25%), 
+                        linear-gradient(-45deg, #e2e8f0 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, #e2e8f0 75%), 
+                        linear-gradient(-45deg, transparent 75%, #e2e8f0 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    }
+
+    /* Scrollbars */
+    .custom-scroll::-webkit-scrollbar {
+      height: 8px;
+      width: 8px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 6px;
+      border: 2px solid #090d16;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
+
+    /* 3D Animated Cubito Logo Style */
+    .cube-logo {
+      transform-style: preserve-3d;
+      animation: rotateCube 12s infinite linear;
+    }
+    @keyframes rotateCube {
+      0% { transform: rotateX(-20deg) rotateY(0deg); }
+      100% { transform: rotateX(-20deg) rotateY(360deg); }
+    }
+
+    .tool-btn-active {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(168, 85, 247, 0.25));
+      border-color: #6366f1;
+      color: #818cf8;
+      box-shadow: 0 0 12px rgba(99, 102, 241, 0.3);
+    }
+  </style>
+</head>
+<body class="h-full flex flex-col overflow-hidden bg-slate-950">
+
+  <!-- TOP HEADER -->
+  <header class="h-14 bg-slate-900/90 backdrop-blur border-b border-slate-800/80 flex items-center justify-between px-4 z-20 shrink-0">
+    <!-- Brand / Logo -->
+    <div class="flex items-center space-x-3">
+      <!-- 3D Cubito Icon -->
+      <div class="w-9 h-9 relative flex items-center justify-center bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 rounded-xl shadow-lg shadow-indigo-500/20 group cursor-pointer overflow-hidden p-0.5">
+        <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
+          <svg class="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+        </div>
+      </div>
+      <div>
+        <div class="flex items-center space-x-2">
+          <h1 class="font-extrabold text-sm tracking-wide bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">FLIPBOOK STUDIO</h1>
+          <span class="text-[10px] font-bold px-1.5 py-0.5 bg-indigo-500/20 text-indigo-300 rounded border border-indigo-500/30">CUBITO ED.</span>
+        </div>
+        <p class="text-[10px] text-slate-400 font-medium">Animación 2D & Importación de Imágenes</p>
+      </div>
+    </div>
+
+    <!-- Undo / Redo & Zoom Controls -->
+    <div class="flex items-center space-x-1 bg-slate-950/60 p-1 rounded-lg border border-slate-800">
+      <button id="btnUndo" class="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition disabled:opacity-30 disabled:hover:bg-transparent" title="Deshacer (Ctrl+Z)">
+        <i data-lucide="undo-2" class="w-4 h-4"></i>
+      </button>
+      <button id="btnRedo" class="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition disabled:opacity-30 disabled:hover:bg-transparent" title="Rehacer (Ctrl+Y)">
+        <i data-lucide="redo-2" class="w-4 h-4"></i>
+      </button>
+      <div class="h-4 w-px bg-slate-800 mx-1"></div>
+      <button id="btnZoomOut" class="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition" title="Reducir zoom">
+        <i data-lucide="zoom-out" class="w-4 h-4"></i>
+      </button>
+      <span id="zoomLevel" class="text-xs font-mono text-slate-300 px-1 font-semibold">100%</span>
+      <button id="btnZoomIn" class="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition" title="Aumentar zoom">
+        <i data-lucide="zoom-in" class="w-4 h-4"></i>
+      </button>
+      <button id="btnResetZoom" class="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition" title="Restablecer zoom">
+        <i data-lucide="maximize-2" class="w-4 h-4"></i>
+      </button>
+    </div>
+
+    <!-- Save / Load / Export Controls -->
+    <div class="flex items-center space-x-2">
+      <button id="btnNewProject" class="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 rounded-lg transition" title="Nuevo Proyecto">
+        <i data-lucide="file-plus" class="w-3.5 h-3.5"></i>
+        <span>Nuevo</span>
+      </button>
+      <button id="btnExportJSON" class="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 rounded-lg transition" title="Guardar Proyecto JSON">
+        <i data-lucide="save" class="w-3.5 h-3.5"></i>
+        <span>Guardar</span>
+      </button>
+      <label class="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-medium text-slate-300 hover:text-white bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 rounded-lg cursor-pointer transition" title="Cargar Proyecto JSON">
+        <i data-lucide="folder-open" class="w-3.5 h-3.5"></i>
+        <span>Cargar</span>
+        <input type="file" id="inputLoadJSON" accept=".json" class="hidden">
+      </label>
+
+      <div class="h-4 w-px bg-slate-800 mx-1"></div>
+
+      <!-- Export GIF Button -->
+      <button id="btnOpenExport" class="flex items-center space-x-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 rounded-lg shadow-lg shadow-indigo-500/25 transition-all transform hover:scale-[1.02]">
+        <i data-lucide="sparkles" class="w-4 h-4"></i>
+        <span>Exportar GIF</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN APP CONTAINER -->
+  <div class="flex-1 flex overflow-hidden relative">
+
+    <!-- LEFT TOOLBAR -->
+    <aside class="w-16 bg-slate-900/90 border-r border-slate-800/80 flex flex-col items-center py-3 space-y-3 shrink-0 z-10 custom-scroll overflow-y-auto">
+      <div class="flex flex-col space-y-1.5 w-full px-2">
+        <!-- Pen Tool -->
+        <button id="toolPen" class="tool-btn tool-btn-active flex flex-col items-center justify-center p-2 rounded-xl text-slate-400 hover:text-white border border-transparent transition" title="Pincel (B)">
+          <i data-lucide="pencil" class="w-4 h-4"></i>
+          <span class="text-[9px] mt-1 font-semibold">Pincel</span>
+        </button>
+        <!-- Eraser Tool -->
+        <button id="toolEraser" class="tool-btn flex flex-col items-center justify-center p-2 rounded-xl text-slate-400 hover:text-white border border-transparent transition" title="Goma (E)">
+          <i data-lucide="eraser" class="w-4 h-4"></i>
+          <span class="text-[9px] mt-1 font-semibold">Goma</span>
+        </button>
+        <!-- Bucket Fill -->
+        <button id="toolBucket" class="tool-btn flex flex-col items-center justify-center p-2 rounded-xl text-slate-400 hover:text-white border border-transparent transition" title="Relleno de Color (F)">
+          <i data-lucide="paint-bucket" class="w-4 h-4"></i>
+          <span class="text-[9px] mt-1 font-semibold">Relleno</span>
+        </button>
+        <!-- Line Tool -->
+        <button id="toolLine" class="tool-btn flex flex-col items-center justify-center p-2 rounded-xl text-slate-400 hover:text-white border border-transparent transition" title="Línea Recta">
+          <i data-lucide="slash" class="w-4 h-4"></i>
+          <span class="text-[9px] mt-1 font-semibold">Línea</span>
+        </button>
+        <!-- Rect Tool -->
+        <button id="toolRect" class="tool-btn flex flex-col items-center justify-center p-2 rounded-xl text-slate-400 hover:text-white border border-transparent transition" title="Rectángulo">
+          <i data-lucide="square" class="w-4 h-4"></i>
+          <span class="text-[9px] mt-1 font-semibold">Rect.</span>
+        </button>
+        <!-- Circle Tool -->
+        <button id="toolCircle" class="tool-btn flex flex-col items-center justify-center p-2 rounded-xl text-slate-400 hover:text-white border border-transparent transition" title="Círculo">
+          <i data-lucide="circle" class="w-4 h-4"></i>
+          <span class="text-[9px] mt-1 font-semibold">Círculo</span>
+        </button>
+      </div>
+
+      <div class="w-8 h-px bg-slate-800/80 my-1"></div>
+
+      <!-- Image Import Tool Button -->
+      <div class="flex flex-col items-center w-full px-2">
+        <label class="flex flex-col items-center justify-center p-2 w-full rounded-xl bg-indigo-950/60 hover:bg-indigo-900/60 border border-indigo-700/50 text-indigo-300 hover:text-white cursor-pointer transition shadow-md" title="Insertar Imagen / PNG / SVG / JPG en el fotograma actual">
+          <i data-lucide="image-plus" class="w-4 h-4"></i>
+          <span class="text-[9px] mt-1 font-semibold text-center leading-tight">Insertar Img</span>
+          <input type="file" id="inputImportImage" accept=".png, .jpg, .jpeg, .webp, .svg" class="hidden">
+        </label>
+      </div>
+
+      <div class="w-8 h-px bg-slate-800/80 my-1"></div>
+
+      <!-- Color Palette & Picker -->
+      <div class="flex flex-col items-center space-y-3 w-full px-2">
+        <div class="flex flex-col items-center">
+          <span class="text-[9px] text-slate-400 mb-1 font-semibold">Color</span>
+          <div class="relative group">
+            <input type="color" id="colorPicker" value="#000000" class="w-8 h-8 rounded-lg border-2 border-slate-700 bg-transparent cursor-pointer p-0 overflow-hidden shadow">
+          </div>
+        </div>
+
+        <!-- Palette Presets -->
+        <div class="grid grid-cols-2 gap-1 w-full px-1">
+          <button class="color-preset w-full aspect-square rounded-md bg-black border border-slate-700" data-color="#000000"></button>
+          <button class="color-preset w-full aspect-square rounded-md bg-white border border-slate-700" data-color="#ffffff"></button>
+          <button class="color-preset w-full aspect-square rounded-md bg-red-500 border border-slate-700" data-color="#ef4444"></button>
+          <button class="color-preset w-full aspect-square rounded-md bg-blue-500 border border-slate-700" data-color="#3b82f6"></button>
+          <button class="color-preset w-full aspect-square rounded-md bg-green-500 border border-slate-700" data-color="#22c55e"></button>
+          <button class="color-preset w-full aspect-square rounded-md bg-amber-400 border border-slate-700" data-color="#fbbf24"></button>
+        </div>
+
+        <div class="w-8 h-px bg-slate-800/80 my-1"></div>
+
+        <!-- Brush Size -->
+        <div class="flex flex-col items-center w-full">
+          <span class="text-[9px] text-slate-400 mb-1 font-semibold">Grosor</span>
+          <span id="brushSizeVal" class="text-[10px] text-indigo-400 font-mono font-bold mb-1">5px</span>
+          <input type="range" id="brushSize" min="1" max="60" value="5" class="w-10 accent-indigo-500 cursor-pointer">
+        </div>
+
+        <!-- Clear Frame -->
+        <button id="btnClearFrame" class="flex flex-col items-center justify-center p-2 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-950/40 border border-red-900/30 transition mt-2" title="Limpiar lienzo actual">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+          <span class="text-[9px] mt-1 font-semibold">Limpiar</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- CENTER CANVAS VIEWPORT -->
+    <main class="flex-1 bg-slate-950 flex items-center justify-center p-6 relative overflow-hidden">
+      <!-- Grid Background Pattern -->
+      <div class="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-40 pointer-events-none"></div>
+
+      <!-- Canvas Viewport Wrapper -->
+      <div id="canvasViewport" class="relative transition-transform duration-75 ease-out shadow-2xl rounded-xl overflow-hidden border-2 border-slate-700/80 canvas-bg flex items-center justify-center">
+        <!-- Onion Skin Prev -->
+        <canvas id="onionCanvasPrev" class="absolute top-0 left-0 pointer-events-none z-0 opacity-40 mix-blend-multiply"></canvas>
+        <!-- Onion Skin Next -->
+        <canvas id="onionCanvasNext" class="absolute top-0 left-0 pointer-events-none z-0 opacity-20 mix-blend-multiply"></canvas>
+        <!-- Main Drawing Canvas -->
+        <canvas id="mainCanvas" class="relative z-10 cursor-crosshair"></canvas>
+        <!-- Temporary Shape Preview Canvas -->
+        <canvas id="tempCanvas" class="absolute top-0 left-0 pointer-events-none z-20"></canvas>
+      </div>
+
+      <!-- Onion Skin Toggle & Options -->
+      <div class="absolute top-4 right-4 bg-slate-900/90 backdrop-blur border border-slate-800 p-3 rounded-2xl flex flex-col space-y-2 shadow-2xl z-30">
+        <div class="flex items-center justify-between space-x-3">
+          <div class="flex items-center space-x-2">
+            <i data-lucide="layers" class="w-4 h-4 text-indigo-400"></i>
+            <span class="text-xs font-semibold text-slate-200">Papel de Cebolla</span>
+          </div>
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" id="toggleOnion" class="sr-only peer" checked>
+            <div class="w-8 h-4 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-indigo-600"></div>
+          </label>
+        </div>
+
+        <div id="onionSettings" class="flex flex-col space-y-1.5 pt-1 border-t border-slate-800 text-[10px] text-slate-400">
+          <div class="flex items-center justify-between space-x-2">
+            <span>Anterior:</span>
+            <span class="text-xs font-semibold text-red-400">Rojo</span>
+          </div>
+          <div class="flex items-center justify-between space-x-2">
+            <span>Siguiente:</span>
+            <span class="text-xs font-semibold text-emerald-400">Verde</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Shortcuts Overlay -->
+      <div class="absolute bottom-4 left-4 bg-slate-900/80 backdrop-blur border border-slate-800/80 px-3 py-2 rounded-xl flex items-center space-x-3 text-[11px] text-slate-400 z-30 hidden sm:flex">
+        <span><kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-300 font-mono">Espacio</kbd> Play</span>
+        <span><kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-300 font-mono">Z/X</kbd> Ant/Sig</span>
+        <span><kbd class="px-1.5 py-0.5 bg-slate-800 border border-slate-700 rounded text-slate-300 font-mono">N</kbd> +Frame</span>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- FOOTER TIMELINE & PLAYBACK -->
+  <footer class="h-44 bg-slate-900/90 border-t border-slate-800/80 flex flex-col shrink-0 z-20">
+
+    <!-- Timeline Action Bar -->
+    <div class="h-11 bg-slate-950/80 border-b border-slate-800/80 flex items-center justify-between px-4">
+      
+      <!-- Playback Controls -->
+      <div class="flex items-center space-x-2">
+        <button id="btnPlay" class="flex items-center justify-center w-8 h-8 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition shadow-md shadow-indigo-600/30" title="Reproducir / Pausa (Espacio)">
+          <i data-lucide="play" class="w-4 h-4 fill-current ml-0.5" id="playIcon"></i>
+        </button>
+        <button id="btnPrevFrame" class="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition" title="Fotograma Anterior (Z)">
+          <i data-lucide="skip-back" class="w-4 h-4"></i>
+        </button>
+        <button id="btnNextFrame" class="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition" title="Siguiente Fotograma (X)">
+          <i data-lucide="skip-forward" class="w-4 h-4"></i>
+        </button>
+
+        <div class="h-4 w-px bg-slate-800 mx-1"></div>
+
+        <span class="text-xs text-slate-300 font-mono font-semibold" id="frameCounter">Fotograma: 1 / 1</span>
+      </div>
+
+      <!-- Timeline Operations -->
+      <div class="flex items-center space-x-3">
+        
+        <!-- Speed (FPS) Control -->
+        <div class="flex items-center space-x-2 bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-800">
+          <span class="text-xs text-slate-400 font-medium">Velocidad:</span>
+          <span id="fpsValue" class="text-xs text-indigo-400 font-mono font-bold w-12 text-center">12 FPS</span>
+          <input type="range" id="fpsRange" min="1" max="30" value="12" class="w-20 accent-indigo-500 cursor-pointer">
+        </div>
+
+        <div class="h-4 w-px bg-slate-800"></div>
+
+        <!-- Frame Action Buttons -->
+        <button id="btnAddFrame" class="flex items-center space-x-1.5 text-xs font-semibold text-indigo-300 hover:text-white bg-indigo-950/60 border border-indigo-800/60 hover:bg-indigo-900/60 px-3 py-1.5 rounded-lg transition" title="Nuevo Fotograma (N)">
+          <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+          <span>Nuevo</span>
+        </button>
+        <button id="btnDuplicateFrame" class="flex items-center space-x-1.5 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-lg transition" title="Duplicar Fotograma">
+          <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+          <span>Duplicar</span>
+        </button>
+        <button id="btnDeleteFrame" class="flex items-center space-x-1.5 text-xs font-semibold text-red-400 hover:text-red-300 bg-red-950/40 border border-red-900/40 hover:bg-red-900/50 px-3 py-1.5 rounded-lg transition" title="Eliminar Fotograma">
+          <i data-lucide="trash" class="w-3.5 h-3.5"></i>
+          <span>Eliminar</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Timeline Frames Horizontal Strip -->
+    <div id="timelineContainer" class="flex-1 flex items-center space-x-3 px-4 overflow-x-auto custom-scroll bg-slate-950/60 py-3">
+      <!-- Dynamic Frame Thumbnails rendered here -->
+    </div>
+
+  </footer>
+
+  <!-- EXPORT GIF MODAL -->
+  <div id="exportModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-lg w-full shadow-2xl flex flex-col items-center">
+      
+      <div class="flex items-center space-x-2 mb-1">
+        <div class="p-2 bg-indigo-500/20 text-indigo-400 rounded-xl">
+          <i data-lucide="film" class="w-6 h-6"></i>
+        </div>
+        <h3 class="text-lg font-bold text-white">Exportar Animación GIF</h3>
+      </div>
+      <p class="text-xs text-slate-400 mb-4 text-center">Genera y descarga un archivo GIF animado listo para compartir o subir a internet.</p>
+      
+      <!-- Preview Frame -->
+      <div class="w-64 h-64 bg-white canvas-bg rounded-xl overflow-hidden border-2 border-slate-700 flex items-center justify-center mb-4 relative shadow-inner">
+        <canvas id="previewCanvas" class="w-full h-full object-contain"></canvas>
+      </div>
+
+      <!-- Export Progress Bar -->
+      <div id="exportProgressContainer" class="w-full mb-4 hidden">
+        <div class="flex justify-between text-xs text-slate-400 mb-1">
+          <span id="exportStatusLabel">Procesando fotogramas...</span>
+          <span id="exportProgressText" class="font-mono font-bold text-indigo-400">0%</span>
+        </div>
+        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+          <div id="exportProgressBar" class="bg-gradient-to-r from-indigo-500 to-pink-500 h-full w-0 transition-all duration-150"></div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex space-x-3 w-full">
+        <button id="btnCloseModal" class="flex-1 py-2.5 text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-xl transition">Cancelar</button>
+        <button id="btnGenerateGIF" class="flex-1 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 rounded-xl shadow-lg shadow-indigo-600/30 transition flex items-center justify-center space-x-2">
+          <i data-lucide="download" class="w-4 h-4"></i>
+          <span>Generar y Descargar GIF</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    const CANVAS_WIDTH = 500;
+    const CANVAS_HEIGHT = 500;
+
+    let frames = [];
+    let historyStack = [];
+    let historyStep = -1;
+    let currentFrameIndex = 0;
+    
+    let isPlaying = false;
+    let playInterval = null;
+    let fps = 12;
+
+    let zoomScale = 1.0;
+
+    let currentTool = 'pen';
+    let brushColor = '#000000';
+    let brushSize = 5;
+    let enableOnionSkin = true;
+
+    let isDrawing = false;
+    let startX = 0;
+    let startY = 0;
+
+    // Canvas elements
+    const mainCanvas = document.getElementById('mainCanvas');
+    const ctx = mainCanvas.getContext('2d', { willReadFrequently: true });
+
+    const onionCanvasPrev = document.getElementById('onionCanvasPrev');
+    const onionCtxPrev = onionCanvasPrev.getContext('2d');
+
+    const onionCanvasNext = document.getElementById('onionCanvasNext');
+    const onionCtxNext = onionCanvasNext.getContext('2d');
+
+    const tempCanvas = document.getElementById('tempCanvas');
+    const tempCtx = tempCanvas.getContext('2d');
+
+    const previewCanvas = document.getElementById('previewCanvas');
+    const previewCtx = previewCanvas.getContext('2d');
+
+    const timelineContainer = document.getElementById('timelineContainer');
+    const canvasViewport = document.getElementById('canvasViewport');
+
+    function initCanvasDimensions() {
+      [mainCanvas, onionCanvasPrev, onionCanvasNext, tempCanvas, previewCanvas].forEach(c => {
+        c.width = CANVAS_WIDTH;
+        c.height = CANVAS_HEIGHT;
+      });
+      canvasViewport.style.width = `${CANVAS_WIDTH}px`;
+      canvasViewport.style.height = `${CANVAS_HEIGHT}px`;
+    }
+
+    window.onload = function() {
+      lucide.createIcons();
+      initCanvasDimensions();
+      addNewFrame();
+      setupEventListeners();
+      setupKeybindings();
+      updateUI();
+    };
+
+    function createBlankFrameData() {
+      const offCanvas = document.createElement('canvas');
+      offCanvas.width = CANVAS_WIDTH;
+      offCanvas.height = CANVAS_HEIGHT;
+      const offCtx = offCanvas.getContext('2d');
+      offCtx.fillStyle = '#ffffff';
+      offCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      return offCanvas.toDataURL();
+    }
+
+    /* Frame Management */
+    function addNewFrame() {
+      const newFrameData = createBlankFrameData();
+      frames.splice(currentFrameIndex + 1, 0, newFrameData);
+      currentFrameIndex++;
+      saveUndoState();
+      renderCurrentFrame();
+      renderTimeline();
+      updateFrameCounter();
+    }
+
+    function duplicateCurrentFrame() {
+      const currentData = frames[currentFrameIndex];
+      frames.splice(currentFrameIndex + 1, 0, currentData);
+      currentFrameIndex++;
+      saveUndoState();
+      renderCurrentFrame();
+      renderTimeline();
+      updateFrameCounter();
+    }
+
+    function deleteCurrentFrame() {
+      if (frames.length <= 1) {
+        clearCurrentFrame();
+        return;
+      }
+      frames.splice(currentFrameIndex, 1);
+      if (currentFrameIndex >= frames.length) {
+        currentFrameIndex = frames.length - 1;
+      }
+      saveUndoState();
+      renderCurrentFrame();
+      renderTimeline();
+      updateFrameCounter();
+    }
+
+    function clearCurrentFrame() {
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      saveCurrentFrameState();
+      saveUndoState();
+      renderTimeline();
+    }
+
+    function saveCurrentFrameState() {
+      frames[currentFrameIndex] = mainCanvas.toDataURL();
+      updateThumbnail(currentFrameIndex);
+    }
+
+    /* Undo / Redo */
+    function saveUndoState() {
+      historyStack = historyStack.slice(0, historyStep + 1);
+      historyStack.push([...frames]);
+      historyStep++;
+      updateUndoRedoButtons();
+    }
+
+    function undo() {
+      if (historyStep > 0) {
+        historyStep--;
+        frames = [...historyStack[historyStep]];
+        if (currentFrameIndex >= frames.length) currentFrameIndex = frames.length - 1;
+        renderCurrentFrame();
+        renderTimeline();
+        updateFrameCounter();
+        updateUndoRedoButtons();
+      }
+    }
+
+    function redo() {
+      if (historyStep < historyStack.length - 1) {
+        historyStep++;
+        frames = [...historyStack[historyStep]];
+        renderCurrentFrame();
+        renderTimeline();
+        updateFrameCounter();
+        updateUndoRedoButtons();
+      }
+    }
+
+    function updateUndoRedoButtons() {
+      document.getElementById('btnUndo').disabled = (historyStep <= 0);
+      document.getElementById('btnRedo').disabled = (historyStep >= historyStack.length - 1);
+    }
+
+    /* Rendering Frames & Onion Skin */
+    function renderCurrentFrame() {
+      const img = new Image();
+      img.onload = function() {
+        ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        ctx.drawImage(img, 0, 0);
+        renderOnionSkin();
+      };
+      img.src = frames[currentFrameIndex];
+    }
+
+    function renderOnionSkin() {
+      onionCtxPrev.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      onionCtxNext.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+      if (!enableOnionSkin) return;
+
+      if (currentFrameIndex > 0) {
+        const prevImg = new Image();
+        prevImg.onload = function() {
+          onionCtxPrev.drawImage(prevImg, 0, 0);
+          onionCtxPrev.globalCompositeOperation = 'source-in';
+          onionCtxPrev.fillStyle = 'rgba(239, 68, 68, 0.45)';
+          onionCtxPrev.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+          onionCtxPrev.globalCompositeOperation = 'source-over';
+        };
+        prevImg.src = frames[currentFrameIndex - 1];
+      }
+
+      if (currentFrameIndex < frames.length - 1) {
+        const nextImg = new Image();
+        nextImg.onload = function() {
+          onionCtxNext.drawImage(nextImg, 0, 0);
+          onionCtxNext.globalCompositeOperation = 'source-in';
+          onionCtxNext.fillStyle = 'rgba(34, 197, 94, 0.35)';
+          onionCtxNext.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+          onionCtxNext.globalCompositeOperation = 'source-over';
+        };
+        nextImg.src = frames[currentFrameIndex + 1];
+      }
+    }
+
+    /* Image Import Support (PNG, JPG, JPEG, WEBP, SVG) */
+    function handleImageImport(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+          // Scale image nicely to fit canvas without distorting aspect ratio
+          let w = img.width;
+          let h = img.height;
+          const maxDim = CANVAS_WIDTH * 0.75;
+          
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = (h / w) * maxDim;
+              w = maxDim;
+            } else {
+              w = (w / h) * maxDim;
+              h = maxDim;
+            }
+          }
+
+          const x = (CANVAS_WIDTH - w) / 2;
+          const y = (CANVAS_HEIGHT - h) / 2;
+
+          ctx.drawImage(img, x, y, w, h);
+          saveCurrentFrameState();
+          saveUndoState();
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+      e.target.value = ''; // Reset input
+    }
+
+    /* Drawing Operations */
+    function getCanvasCoordinates(e) {
+      const rect = mainCanvas.getBoundingClientRect();
+      const scaleX = CANVAS_WIDTH / rect.width;
+      const scaleY = CANVAS_HEIGHT / rect.height;
+
+      let clientX = e.clientX;
+      let clientY = e.clientY;
+
+      if (e.touches && e.touches.length > 0) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+      }
+
+      return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
+      };
+    }
+
+    function startDrawing(e) {
+      if (isPlaying) return;
+      isDrawing = true;
+      const pos = getCanvasCoordinates(e);
+      startX = pos.x;
+      startY = pos.y;
+
+      if (currentTool === 'bucket') {
+        floodFill(Math.round(startX), Math.round(startY), hexToRgba(brushColor));
+        saveCurrentFrameState();
+        saveUndoState();
+        isDrawing = false;
+        return;
+      }
+
+      if (currentTool === 'pen' || currentTool === 'eraser') {
+        ctx.beginPath();
+        ctx.moveTo(startX, startY);
+        ctx.strokeStyle = currentTool === 'eraser' ? '#ffffff' : brushColor;
+        ctx.lineWidth = brushSize;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.globalCompositeOperation = 'source-over';
+      }
+    }
+
+    function draw(e) {
+      if (!isDrawing || isPlaying) return;
+      const pos = getCanvasCoordinates(e);
+
+      if (currentTool === 'pen' || currentTool === 'eraser') {
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+      } else if (['line', 'rect', 'circle'].includes(currentTool)) {
+        tempCtx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        tempCtx.beginPath();
+        tempCtx.strokeStyle = brushColor;
+        tempCtx.lineWidth = brushSize;
+        tempCtx.lineCap = 'round';
+
+        if (currentTool === 'line') {
+          tempCtx.moveTo(startX, startY);
+          tempCtx.lineTo(pos.x, pos.y);
+        } else if (currentTool === 'rect') {
+          tempCtx.rect(startX, startY, pos.x - startX, pos.y - startY);
+        } else if (currentTool === 'circle') {
+          const radius = Math.sqrt(Math.pow(pos.x - startX, 2) + Math.pow(pos.y - startY, 2));
+          tempCtx.arc(startX, startY, radius, 0, 2 * Math.PI);
+        }
+        tempCtx.stroke();
+      }
+    }
+
+    function stopDrawing() {
+      if (!isDrawing) return;
+      isDrawing = false;
+
+      if (['line', 'rect', 'circle'].includes(currentTool)) {
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.drawImage(tempCanvas, 0, 0);
+        tempCtx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      }
+
+      saveCurrentFrameState();
+      saveUndoState();
+    }
+
+    function floodFill(startX, startY, fillColor) {
+      const imgData = ctx.getImageData(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      const data = imgData.data;
+      
+      const targetIdx = (startY * CANVAS_WIDTH + startX) * 4;
+      const targetR = data[targetIdx];
+      const targetG = data[targetIdx + 1];
+      const targetB = data[targetIdx + 2];
+      const targetA = data[targetIdx + 3];
+
+      if (matchColor(targetR, targetG, targetB, targetA, fillColor)) return;
+
+      const queue = [[startX, startY]];
+      const visited = new Uint8Array(CANVAS_WIDTH * CANVAS_HEIGHT);
+
+      while (queue.length > 0) {
+        const [x, y] = queue.pop();
+        if (x < 0 || x >= CANVAS_WIDTH || y < 0 || y >= CANVAS_HEIGHT) continue;
+
+        const idx = y * CANVAS_WIDTH + x;
+        if (visited[idx]) continue;
+        visited[idx] = 1;
+
+        const pxIdx = idx * 4;
+        if (matchColorExact(data[pxIdx], data[pxIdx + 1], data[pxIdx + 2], data[pxIdx + 3], targetR, targetG, targetB, targetA)) {
+          data[pxIdx] = fillColor.r;
+          data[pxIdx + 1] = fillColor.g;
+          data[pxIdx + 2] = fillColor.b;
+          data[pxIdx + 3] = fillColor.a;
+
+          queue.push([x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]);
+        }
+      }
+      ctx.putImageData(imgData, 0, 0);
+    }
+
+    function matchColorExact(r1, g1, b1, a1, r2, g2, b2, a2) {
+      return Math.abs(r1 - r2) < 32 && Math.abs(g1 - g2) < 32 && Math.abs(b1 - b2) < 32 && Math.abs(a1 - a2) < 32;
+    }
+
+    function matchColor(r1, g1, b1, a1, fillColor) {
+      return r1 === fillColor.r && g1 === fillColor.g && b1 === fillColor.b && a1 === fillColor.a;
+    }
+
+    function hexToRgba(hex) {
+      const c = parseInt(hex.replace('#', ''), 16);
+      return { r: (c >> 16) & 255, g: (c >> 8) & 255, b: c & 255, a: 255 };
+    }
+
+    /* Timeline Rendering */
+    function renderTimeline() {
+      timelineContainer.innerHTML = '';
+
+      frames.forEach((frameData, index) => {
+        const thumbWrapper = document.createElement('div');
+        thumbWrapper.className = `relative shrink-0 w-20 h-20 rounded-xl border-2 cursor-pointer overflow-hidden transition-all flex flex-col items-center justify-center bg-white canvas-bg shadow-md ${index === currentFrameIndex ? 'border-indigo-500 scale-105 ring-2 ring-indigo-500/40 z-10' : 'border-slate-800 opacity-60 hover:opacity-100 hover:border-slate-600'}`;
+
+        const img = document.createElement('img');
+        img.src = frameData;
+        img.className = 'w-full h-full object-contain pointer-events-none';
+        img.id = `thumb-${index}`;
+
+        const frameNum = document.createElement('span');
+        frameNum.className = 'absolute bottom-1 right-1 text-[9px] font-mono font-bold bg-slate-900/90 text-slate-200 px-1.5 py-0.5 rounded-md border border-slate-700/50';
+        frameNum.innerText = index + 1;
+
+        thumbWrapper.appendChild(img);
+        thumbWrapper.appendChild(frameNum);
+
+        thumbWrapper.onclick = () => {
+          if (isPlaying) stopPlayback();
+          currentFrameIndex = index;
+          renderCurrentFrame();
+          renderTimeline();
+          updateFrameCounter();
+        };
+
+        timelineContainer.appendChild(thumbWrapper);
+      });
+    }
+
+    function updateThumbnail(index) {
+      const img = document.getElementById(`thumb-${index}`);
+      if (img) img.src = frames[index];
+    }
+
+    function updateFrameCounter() {
+      document.getElementById('frameCounter').innerText = `Fotograma: ${currentFrameIndex + 1} / ${frames.length}`;
+    }
+
+    /* Playback Loop */
+    function togglePlayback() {
+      if (isPlaying) stopPlayback();
+      else startPlayback();
+    }
+
+    function startPlayback() {
+      if (frames.length === 0) return;
+      isPlaying = true;
+      document.getElementById('playIcon').setAttribute('data-lucide', 'pause');
+      lucide.createIcons();
+
+      playInterval = setInterval(() => {
+        currentFrameIndex = (currentFrameIndex + 1) % frames.length;
+        renderCurrentFrame();
+        updateFrameCounter();
+
+        const thumbs = timelineContainer.children;
+        for (let i = 0; i < thumbs.length; i++) {
+          if (i === currentFrameIndex) {
+            thumbs[i].classList.add('border-indigo-500', 'scale-105');
+            thumbs[i].classList.remove('border-slate-800', 'opacity-60');
+          } else {
+            thumbs[i].classList.remove('border-indigo-500', 'scale-105');
+            thumbs[i].classList.add('border-slate-800', 'opacity-60');
+          }
+        }
+      }, 1000 / fps);
+    }
+
+    function stopPlayback() {
+      isPlaying = false;
+      clearInterval(playInterval);
+      document.getElementById('playIcon').setAttribute('data-lucide', 'play');
+      lucide.createIcons();
+      renderTimeline();
+    }
+
+    /* Event Listeners Setup */
+    function setupEventListeners() {
+      mainCanvas.addEventListener('mousedown', startDrawing);
+      mainCanvas.addEventListener('mousemove', draw);
+      mainCanvas.addEventListener('mouseup', stopDrawing);
+      mainCanvas.addEventListener('mouseleave', stopDrawing);
+
+      mainCanvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e); });
+      mainCanvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); });
+      mainCanvas.addEventListener('touchend', (e) => { e.preventDefault(); stopDrawing(); });
+
+      // Image Import
+      document.getElementById('inputImportImage').addEventListener('change', handleImageImport);
+
+      const tools = [
+        { id: 'toolPen', name: 'pen' },
+        { id: 'toolEraser', name: 'eraser' },
+        { id: 'toolBucket', name: 'bucket' },
+        { id: 'toolLine', name: 'line' },
+        { id: 'toolRect', name: 'rect' },
+        { id: 'toolCircle', name: 'circle' }
+      ];
+
+      tools.forEach(t => {
+        document.getElementById(t.id).addEventListener('click', () => {
+          currentTool = t.name;
+          tools.forEach(o => {
+            const btn = document.getElementById(o.id);
+            if (o.name === currentTool) btn.classList.add('tool-btn-active');
+            else btn.classList.remove('tool-btn-active');
+          });
+        });
+      });
+
+      document.querySelectorAll('.color-preset').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          brushColor = e.target.getAttribute('data-color');
+          document.getElementById('colorPicker').value = brushColor;
+        });
+      });
+
+      document.getElementById('colorPicker').addEventListener('input', (e) => brushColor = e.target.value);
+      document.getElementById('brushSize').addEventListener('input', (e) => {
+        brushSize = e.target.value;
+        document.getElementById('brushSizeVal').innerText = `${brushSize}px`;
+      });
+
+      document.getElementById('btnClearFrame').addEventListener('click', clearCurrentFrame);
+      document.getElementById('toggleOnion').addEventListener('change', (e) => {
+        enableOnionSkin = e.target.checked;
+        renderOnionSkin();
+      });
+
+      document.getElementById('btnUndo').addEventListener('click', undo);
+      document.getElementById('btnRedo').addEventListener('click', redo);
+
+      document.getElementById('btnAddFrame').addEventListener('click', addNewFrame);
+      document.getElementById('btnDuplicateFrame').addEventListener('click', duplicateCurrentFrame);
+      document.getElementById('btnDeleteFrame').addEventListener('click', deleteCurrentFrame);
+
+      document.getElementById('btnPlay').addEventListener('click', togglePlayback);
+      document.getElementById('btnPrevFrame').addEventListener('click', () => {
+        if (isPlaying) stopPlayback();
+        currentFrameIndex = (currentFrameIndex - 1 + frames.length) % frames.length;
+        renderCurrentFrame();
+        renderTimeline();
+        updateFrameCounter();
+      });
+      document.getElementById('btnNextFrame').addEventListener('click', () => {
+        if (isPlaying) stopPlayback();
+        currentFrameIndex = (currentFrameIndex + 1) % frames.length;
+        renderCurrentFrame();
+        renderTimeline();
+        updateFrameCounter();
+      });
+
+      document.getElementById('fpsRange').addEventListener('input', (e) => {
+        fps = parseInt(e.target.value);
+        document.getElementById('fpsValue').innerText = `${fps} FPS`;
+        if (isPlaying) {
+          stopPlayback();
+          startPlayback();
+        }
+      });
+
+      document.getElementById('btnZoomIn').addEventListener('click', () => setZoom(zoomScale + 0.15));
+      document.getElementById('btnZoomOut').addEventListener('click', () => setZoom(zoomScale - 0.15));
+      document.getElementById('btnResetZoom').addEventListener('click', () => setZoom(1.0));
+
+      document.getElementById('btnExportJSON').addEventListener('click', exportProjectJSON);
+      document.getElementById('inputLoadJSON').addEventListener('change', importProjectJSON);
+      document.getElementById('btnNewProject').addEventListener('click', resetProject);
+
+      document.getElementById('btnOpenExport').addEventListener('click', openExportModal);
+      document.getElementById('btnCloseModal').addEventListener('click', closeExportModal);
+      document.getElementById('btnGenerateGIF').addEventListener('click', generateGIF);
+    }
+
+    function setZoom(scale) {
+      zoomScale = Math.min(Math.max(0.5, scale), 2.5);
+      canvasViewport.style.transform = `scale(${zoomScale})`;
+      document.getElementById('zoomLevel').innerText = `${Math.round(zoomScale * 100)}%`;
+    }
+
+    function setupKeybindings() {
+      window.addEventListener('keydown', (e) => {
+        if (e.target.tagName === 'INPUT') return;
+
+        if (e.code === 'Space') {
+          e.preventDefault();
+          togglePlayback();
+        } else if (e.key === 'z' || e.key === 'Z') {
+          if (e.ctrlKey || e.metaKey) undo();
+          else document.getElementById('btnPrevFrame').click();
+        } else if (e.key === 'y' || e.key === 'Y') {
+          if (e.ctrlKey || e.metaKey) redo();
+        } else if (e.key === 'x' || e.key === 'X') {
+          document.getElementById('btnNextFrame').click();
+        } else if (e.key === 'n' || e.key === 'N') {
+          addNewFrame();
+        } else if (e.key === 'b' || e.key === 'B') {
+          document.getElementById('toolPen').click();
+        } else if (e.key === 'e' || e.key === 'E') {
+          document.getElementById('toolEraser').click();
+        } else if (e.key === 'f' || e.key === 'F') {
+          document.getElementById('toolBucket').click();
+        }
+      });
+    }
+
+    function updateUI() {
+      document.getElementById('brushSizeVal').innerText = `${brushSize}px`;
+      document.getElementById('fpsValue').innerText = `${fps} FPS`;
+    }
+
+    /* JSON Project Export / Import */
+    function exportProjectJSON() {
+      const projectData = {
+        version: "2.1",
+        width: CANVAS_WIDTH,
+        height: CANVAS_HEIGHT,
+        fps: fps,
+        frames: frames
+      };
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(projectData));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `flipbook_cubito_${Date.now()}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    }
+
+    function importProjectJSON(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        try {
+          const project = JSON.parse(event.target.result);
+          if (project.frames && Array.isArray(project.frames)) {
+            frames = project.frames;
+            fps = project.fps || 12;
+            document.getElementById('fpsRange').value = fps;
+            document.getElementById('fpsValue').innerText = `${fps} FPS`;
+            currentFrameIndex = 0;
+            saveUndoState();
+            renderCurrentFrame();
+            renderTimeline();
+            updateFrameCounter();
+          }
+        } catch (err) {
+          console.error(err);
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    function resetProject() {
+      if (confirm('¿Deseas iniciar un nuevo proyecto? Se borrarán los cambios no guardados.')) {
+        frames = [];
+        currentFrameIndex = 0;
+        historyStack = [];
+        historyStep = -1;
+        addNewFrame();
+      }
+    }
+
+    /* GIF Modal & GIF generation via gifshot */
+    let previewModalInterval = null;
+
+    function openExportModal() {
+      if (isPlaying) stopPlayback();
+      const modal = document.getElementById('exportModal');
+      modal.classList.remove('hidden');
+
+      let modalFrameIdx = 0;
+      previewModalInterval = setInterval(() => {
+        if (frames.length > 0) {
+          const img = new Image();
+          img.onload = function() {
+            previewCtx.fillStyle = '#ffffff';
+            previewCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            previewCtx.drawImage(img, 0, 0);
+          };
+          img.src = frames[modalFrameIdx];
+          modalFrameIdx = (modalFrameIdx + 1) % frames.length;
+        }
+      }, 1000 / fps);
+    }
+
+    function closeExportModal() {
+      clearInterval(previewModalInterval);
+      document.getElementById('exportProgressContainer').classList.add('hidden');
+      document.getElementById('exportModal').classList.add('hidden');
+    }
+
+    function generateGIF() {
+      const progressContainer = document.getElementById('exportProgressContainer');
+      const progressBar = document.getElementById('exportProgressBar');
+      const progressText = document.getElementById('exportProgressText');
+      const statusLabel = document.getElementById('exportStatusLabel');
+
+      progressContainer.classList.remove('hidden');
+      progressBar.style.width = '10%';
+      progressText.innerText = '10%';
+      statusLabel.innerText = 'Compilando fotogramas...';
+
+      // Using gifshot robust library for guaranteed web export
+      gifshot.createGIF({
+        images: frames,
+        interval: 1 / fps,
+        width: CANVAS_WIDTH,
+        height: CANVAS_HEIGHT,
+        numFrames: frames.length,
+        frameDuration: 1,
+        gifWidth: CANVAS_WIDTH,
+        gifHeight: CANVAS_HEIGHT
+      }, function(obj) {
+        if (!obj.error) {
+          progressBar.style.width = '100%';
+          progressText.innerText = '100%';
+          statusLabel.innerText = '¡GIF completado!';
+
+          setTimeout(() => {
+            const link = document.createElement('a');
+            link.href = obj.image;
+            link.download = `animacion_flipbook_${Date.now()}.gif`;
+            link.click();
+            closeExportModal();
+          }, 400);
+        } else {
+          statusLabel.innerText = 'Error al generar GIF. Intente de nuevo.';
+          progressBar.style.backgroundColor = '#ef4444';
+        }
+      });
+    }
+  </script>
+</body>
+</html>
