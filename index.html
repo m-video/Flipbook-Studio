@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flipbook Studio - 3D Cubito & Smart Selection Edition</title>
+  <title>Flipbook Studio - 3D Cubito & MP4/GIF Edition</title>
   
   <!-- Favicon SVG de Cubito -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23818cf8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'/><polyline points='3.27 6.96 12 12.01 20.73 6.96'/><line x1='12' y1='22.08' x2='12' y2='12'/></svg>">
@@ -73,9 +73,9 @@
       <div>
         <div class="flex items-center space-x-2">
           <h1 class="font-extrabold text-sm tracking-wide bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">FLIPBOOK STUDIO</h1>
-          <span class="text-[10px] font-bold px-1.5 py-0.5 bg-indigo-500/20 text-indigo-300 rounded border border-indigo-500/30">SMART SEL.</span>
+          <span class="text-[10px] font-bold px-1.5 py-0.5 bg-indigo-500/20 text-indigo-300 rounded border border-indigo-500/30">MP4 / GIF</span>
         </div>
-        <p class="text-[10px] text-slate-400 font-medium">Animación 2D & Selección Transparente</p>
+        <p class="text-[10px] text-slate-400 font-medium">Animación 2D & Exportación de Video</p>
       </div>
     </div>
 
@@ -118,10 +118,10 @@
 
       <div class="h-4 w-px bg-slate-800 mx-1"></div>
 
-      <!-- Export GIF Button -->
+      <!-- Export Multimedia Button -->
       <button id="btnOpenExport" class="flex items-center space-x-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 rounded-lg shadow-lg shadow-indigo-500/25 transition-all transform hover:scale-[1.02]">
         <i data-lucide="sparkles" class="w-4 h-4"></i>
-        <span>Exportar GIF</span>
+        <span>Exportar Video / GIF</span>
       </button>
     </div>
   </header>
@@ -302,21 +302,35 @@
     <div id="timelineContainer" class="flex-1 flex items-center space-x-3 px-4 overflow-x-auto custom-scroll bg-slate-950/60 py-3"></div>
   </footer>
 
-  <!-- EXPORT GIF MODAL -->
+  <!-- EXPORT MULTIMEDIA MODAL (MP4 or GIF) -->
   <div id="exportModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-lg w-full shadow-2xl flex flex-col items-center">
       <div class="flex items-center space-x-2 mb-1">
         <div class="p-2 bg-indigo-500/20 text-indigo-400 rounded-xl">
           <i data-lucide="film" class="w-6 h-6"></i>
         </div>
-        <h3 class="text-lg font-bold text-white">Exportar Animación GIF</h3>
+        <h3 class="text-lg font-bold text-white">Exportar Animación (MP4 / GIF)</h3>
       </div>
-      <p class="text-xs text-slate-400 mb-4 text-center">Genera y descarga un archivo GIF animado listo para compartir.</p>
+      <p class="text-xs text-slate-400 mb-4 text-center">Selecciona el formato de salida para descargar tu animación.</p>
       
+      <!-- Format Selector Tabs -->
+      <div class="flex bg-slate-950 p-1 rounded-xl border border-slate-800 mb-4 w-full">
+        <button id="tabFormatGIF" class="flex-1 py-2 text-xs font-bold rounded-lg bg-indigo-600 text-white transition flex items-center justify-center space-x-1.5">
+          <i data-lucide="image" class="w-3.5 h-3.5"></i>
+          <span>Formato GIF</span>
+        </button>
+        <button id="tabFormatMP4" class="flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center space-x-1.5">
+          <i data-lucide="video" class="w-3.5 h-3.5"></i>
+          <span>Formato MP4</span>
+        </button>
+      </div>
+
+      <!-- Preview Frame -->
       <div class="w-64 h-64 bg-white canvas-bg rounded-xl overflow-hidden border-2 border-slate-700 flex items-center justify-center mb-4 relative shadow-inner">
         <canvas id="previewCanvas" class="w-full h-full object-contain"></canvas>
       </div>
 
+      <!-- Export Progress Bar -->
       <div id="exportProgressContainer" class="w-full mb-4 hidden">
         <div class="flex justify-between text-xs text-slate-400 mb-1">
           <span id="exportStatusLabel">Procesando fotogramas...</span>
@@ -329,9 +343,9 @@
 
       <div class="flex space-x-3 w-full">
         <button id="btnCloseModal" class="flex-1 py-2.5 text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-xl transition">Cancelar</button>
-        <button id="btnGenerateGIF" class="flex-1 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 rounded-xl shadow-lg shadow-indigo-600/30 transition flex items-center justify-center space-x-2">
+        <button id="btnGenerateFile" class="flex-1 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 rounded-xl shadow-lg shadow-indigo-600/30 transition flex items-center justify-center space-x-2">
           <i data-lucide="download" class="w-4 h-4"></i>
-          <span>Generar y Descargar GIF</span>
+          <span id="generateButtonText">Generar y Descargar GIF</span>
         </button>
       </div>
     </div>
@@ -357,6 +371,7 @@
     let brushColor = '#000000';
     let brushSize = 5;
     let enableLayerMode = true;
+    let exportFormat = 'GIF'; // 'GIF' o 'MP4'
 
     let isDrawing = false;
     let startX = 0;
@@ -749,11 +764,9 @@
       selectionBox.w = sw;
       selectionBox.h = sh;
 
-      // Obtener los datos de imagen de la selección
       const imgData = ctx.getImageData(sx, sy, sw, sh);
       const data = imgData.data;
 
-      // Crear un offscreen canvas para aislar solo los trazos (ignorando el fondo blanco puro)
       const selCanvas = document.createElement('canvas');
       selCanvas.width = sw;
       selCanvas.height = sh;
@@ -767,14 +780,11 @@
         const b = data[i+2];
         const a = data[i+3];
 
-        // Si el píxel es blanco puro (o prácticamente blanco 250+), lo volvemos transparente
-        // a menos que sea un objeto de color blanco explícito aislado, pero para evitar capturar
-        // el fondo blanco del lienzo, filtramos los píxeles blancos que coinciden con el fondo.
         if (r > 245 && g > 245 && b > 245) {
           targetData[i] = 255;
           targetData[i+1] = 255;
           targetData[i+2] = 255;
-          targetData[i+3] = 0; // Transparente para la selección
+          targetData[i+3] = 0;
         } else {
           targetData[i] = r;
           targetData[i+1] = g;
@@ -786,7 +796,6 @@
       selCtx.putImageData(targetImgData, 0, 0);
       selectionBox.canvas = selCanvas;
 
-      // Limpiar con blanco el área extraída en el canvas principal
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(sx, sy, sw, sh);
       saveCurrentFrameState();
@@ -1069,9 +1078,28 @@
       document.getElementById('inputLoadJSON').addEventListener('change', importProjectJSON);
       document.getElementById('btnNewProject').addEventListener('click', resetProject);
 
+      // Modal Format Tabs
+      const tabGIF = document.getElementById('tabFormatGIF');
+      const tabMP4 = document.getElementById('tabFormatMP4');
+      const genBtnText = document.getElementById('generateButtonText');
+
+      tabGIF.addEventListener('click', () => {
+        exportFormat = 'GIF';
+        tabGIF.className = 'flex-1 py-2 text-xs font-bold rounded-lg bg-indigo-600 text-white transition flex items-center justify-center space-x-1.5';
+        tabMP4.className = 'flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center space-x-1.5';
+        genBtnText.innerText = 'Generar y Descargar GIF';
+      });
+
+      tabMP4.addEventListener('click', () => {
+        exportFormat = 'MP4';
+        tabMP4.className = 'flex-1 py-2 text-xs font-bold rounded-lg bg-indigo-600 text-white transition flex items-center justify-center space-x-1.5';
+        tabGIF.className = 'flex-1 py-2 text-xs font-bold rounded-lg text-slate-400 hover:text-white transition flex items-center justify-center space-x-1.5';
+        genBtnText.innerText = 'Generar y Descargar MP4 (WebM/Video)';
+      });
+
       document.getElementById('btnOpenExport').addEventListener('click', openExportModal);
       document.getElementById('btnCloseModal').addEventListener('click', closeExportModal);
-      document.getElementById('btnGenerateGIF').addEventListener('click', generateGIF);
+      document.getElementById('btnGenerateFile').addEventListener('click', generateFile);
     }
 
     function setZoom(scale) {
@@ -1119,7 +1147,7 @@
     function exportProjectJSON() {
       if (selectionBox) applySelectionFloat();
       const projectData = {
-        version: "2.6",
+        version: "2.7",
         width: CANVAS_WIDTH,
         height: CANVAS_HEIGHT,
         fps: fps,
@@ -1172,7 +1200,7 @@
       }
     }
 
-    /* GIF Modal & GIF generation via gifshot */
+    /* Export Modal & Generation (GIF or MP4 Video via MediaRecorder) */
     let previewModalInterval = null;
 
     function openExportModal() {
@@ -1202,6 +1230,14 @@
       document.getElementById('exportModal').classList.add('hidden');
     }
 
+    function generateFile() {
+      if (exportFormat === 'GIF') {
+        generateGIF();
+      } else {
+        generateMP4Video();
+      }
+    }
+
     function generateGIF() {
       const progressContainer = document.getElementById('exportProgressContainer');
       const progressBar = document.getElementById('exportProgressBar');
@@ -1211,7 +1247,7 @@
       progressContainer.classList.remove('hidden');
       progressBar.style.width = '10%';
       progressText.innerText = '10%';
-      statusLabel.innerText = 'Compilando fotogramas...';
+      statusLabel.innerText = 'Compilando GIF...';
 
       gifshot.createGIF({
         images: frames,
@@ -1240,6 +1276,87 @@
           progressBar.style.backgroundColor = '#ef4444';
         }
       });
+    }
+
+    function generateMP4Video() {
+      const progressContainer = document.getElementById('exportProgressContainer');
+      const progressBar = document.getElementById('exportProgressBar');
+      const progressText = document.getElementById('exportProgressText');
+      const statusLabel = document.getElementById('exportStatusLabel');
+
+      progressContainer.classList.remove('hidden');
+      progressBar.style.width = '20%';
+      progressText.innerText = '20%';
+      statusLabel.innerText = 'Grabando video de animación...';
+
+      // Creamos un canvas temporal invisible para reproducir fotograma por fotograma y grabarlo con MediaRecorder
+      const recordCanvas = document.createElement('canvas');
+      recordCanvas.width = CANVAS_WIDTH;
+      recordCanvas.height = CANVAS_HEIGHT;
+      const recCtx = recordCanvas.getContext('2d');
+
+      const stream = recordCanvas.captureStream(fps);
+      let recorder;
+      try {
+        recorder = new MediaRecorder(stream, { mimeType: 'video/webm; codecs=vp9' });
+      } catch (e) {
+        try {
+          recorder = new MediaRecorder(stream, { mimeType: 'video/webm' });
+        } catch (err) {
+          recorder = new MediaRecorder(stream);
+        }
+      }
+
+      let chunks = [];
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.push(e.data);
+      };
+
+      recorder.onstop = () => {
+        progressBar.style.width = '100%';
+        progressText.innerText = '100%';
+        statusLabel.innerText = '¡Video completado!';
+
+        const blob = new Blob(chunks, { type: 'video/mp4' });
+        const url = URL.createObjectURL(blob);
+
+        setTimeout(() => {
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `animacion_flipbook_${Date.now()}.mp4`;
+          link.click();
+          closeExportModal();
+        }, 400);
+      };
+
+      recorder.start();
+
+      // Reproducir todos los fotogramas en el canvas de grabación según el FPS
+      let fIndex = 0;
+      const frameDurationMs = 1000 / fps;
+
+      const renderNextRecordFrame = () => {
+        if (fIndex < frames.length) {
+          const img = new Image();
+          img.onload = () => {
+            recCtx.fillStyle = '#ffffff';
+            recCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+            recCtx.drawImage(img, 0, 0);
+            fIndex++;
+            progressBar.style.width = `${Math.round(20 + (fIndex / frames.length) * 70)}%`;
+            progressText.innerText = `${Math.round(20 + (fIndex / frames.length) * 70)}%`;
+            setTimeout(renderNextRecordFrame, frameDurationMs);
+          };
+          img.src = frames[fIndex];
+        } else {
+          // Dar un breve margen y detener la grabación
+          setTimeout(() => {
+            recorder.stop();
+          }, frameDurationMs);
+        }
+      };
+
+      renderNextRecordFrame();
     }
   </script>
 </body>
