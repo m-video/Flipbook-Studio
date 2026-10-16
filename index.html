@@ -3,16 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Flipbook Studio - 3D Cubito & Image Import Edition</title>
+  <title>Flipbook Studio - 3D Cubito & Smart Selection Edition</title>
   
-  <!-- Favicon para la barra de pestañas -->
+  <!-- Favicon SVG de Cubito -->
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23818cf8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z'/><polyline points='3.27 6.96 12 12.01 20.73 6.96'/><line x1='12' y1='22.08' x2='12' y2='12'/></svg>">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <!-- GIF.js (Robust GIF Encoder bundle via CDN) -->
+  <!-- GIF.js (Encoder) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gifshot/0.3.2/gifshot.min.js"></script>
   <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -21,7 +21,6 @@
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
     code, .font-mono { font-family: 'JetBrains Mono', monospace; }
     
-    /* Transparent Checkerboard Canvas Background */
     .canvas-bg {
       background-color: #ffffff;
       background-image: linear-gradient(45deg, #e2e8f0 25%, transparent 25%), 
@@ -32,7 +31,6 @@
       background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
     }
 
-    /* Scrollbars */
     .custom-scroll::-webkit-scrollbar {
       height: 8px;
       width: 8px;
@@ -49,16 +47,6 @@
       background: #334155;
     }
 
-    /* 3D Animated Cubito Logo Style */
-    .cube-logo {
-      transform-style: preserve-3d;
-      animation: rotateCube 12s infinite linear;
-    }
-    @keyframes rotateCube {
-      0% { transform: rotateX(-20deg) rotateY(0deg); }
-      100% { transform: rotateX(-20deg) rotateY(360deg); }
-    }
-
     .tool-btn-active {
       background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(168, 85, 247, 0.25));
       border-color: #6366f1;
@@ -73,7 +61,6 @@
   <header class="h-14 bg-slate-900/90 backdrop-blur border-b border-slate-800/80 flex items-center justify-between px-4 z-20 shrink-0">
     <!-- Brand / Logo -->
     <div class="flex items-center space-x-3">
-      <!-- 3D Cubito Icon -->
       <div class="w-9 h-9 relative flex items-center justify-center bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 rounded-xl shadow-lg shadow-indigo-500/20 group cursor-pointer overflow-hidden p-0.5">
         <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center">
           <svg class="w-5 h-5 text-indigo-400 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -86,9 +73,9 @@
       <div>
         <div class="flex items-center space-x-2">
           <h1 class="font-extrabold text-sm tracking-wide bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">FLIPBOOK STUDIO</h1>
-          <span class="text-[10px] font-bold px-1.5 py-0.5 bg-indigo-500/20 text-indigo-300 rounded border border-indigo-500/30">CUBITO ED.</span>
+          <span class="text-[10px] font-bold px-1.5 py-0.5 bg-indigo-500/20 text-indigo-300 rounded border border-indigo-500/30">SMART SEL.</span>
         </div>
-        <p class="text-[10px] text-slate-400 font-medium">Animación 2D & Importación de Imágenes</p>
+        <p class="text-[10px] text-slate-400 font-medium">Animación 2D & Selección Transparente</p>
       </div>
     </div>
 
@@ -150,6 +137,11 @@
           <i data-lucide="pencil" class="w-4 h-4"></i>
           <span class="text-[9px] mt-1 font-semibold">Pincel</span>
         </button>
+        <!-- Selection Tool -->
+        <button id="toolSelect" class="tool-btn flex flex-col items-center justify-center p-2 rounded-xl text-slate-400 hover:text-white border border-transparent transition" title="Selección Rectangular Inteligente (S)">
+          <i data-lucide="box-select" class="w-4 h-4"></i>
+          <span class="text-[9px] mt-1 font-semibold">Selección</span>
+        </button>
         <!-- Eraser Tool -->
         <button id="toolEraser" class="tool-btn flex flex-col items-center justify-center p-2 rounded-xl text-slate-400 hover:text-white border border-transparent transition" title="Goma (E)">
           <i data-lucide="eraser" class="w-4 h-4"></i>
@@ -199,7 +191,6 @@
           </div>
         </div>
 
-        <!-- Palette Presets -->
         <div class="grid grid-cols-2 gap-1 w-full px-1">
           <button class="color-preset w-full aspect-square rounded-md bg-black border border-slate-700" data-color="#000000"></button>
           <button class="color-preset w-full aspect-square rounded-md bg-white border border-slate-700" data-color="#ffffff"></button>
@@ -211,14 +202,12 @@
 
         <div class="w-8 h-px bg-slate-800/80 my-1"></div>
 
-        <!-- Brush Size -->
         <div class="flex flex-col items-center w-full">
           <span class="text-[9px] text-slate-400 mb-1 font-semibold">Grosor</span>
           <span id="brushSizeVal" class="text-[10px] text-indigo-400 font-mono font-bold mb-1">5px</span>
           <input type="range" id="brushSize" min="1" max="60" value="5" class="w-10 accent-indigo-500 cursor-pointer">
         </div>
 
-        <!-- Clear Frame -->
         <button id="btnClearFrame" class="flex flex-col items-center justify-center p-2 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-950/40 border border-red-900/30 transition mt-2" title="Limpiar lienzo actual">
           <i data-lucide="trash-2" class="w-4 h-4"></i>
           <span class="text-[9px] mt-1 font-semibold">Limpiar</span>
@@ -228,43 +217,31 @@
 
     <!-- CENTER CANVAS VIEWPORT -->
     <main class="flex-1 bg-slate-950 flex items-center justify-center p-6 relative overflow-hidden">
-      <!-- Grid Background Pattern -->
       <div class="absolute inset-0 bg-[radial-gradient(#1e293b_1px,transparent_1px)] [background-size:16px_16px] opacity-40 pointer-events-none"></div>
 
-      <!-- Canvas Viewport Wrapper -->
       <div id="canvasViewport" class="relative transition-transform duration-75 ease-out shadow-2xl rounded-xl overflow-hidden border-2 border-slate-700/80 canvas-bg flex items-center justify-center">
-        <!-- Onion Skin Prev -->
-        <canvas id="onionCanvasPrev" class="absolute top-0 left-0 pointer-events-none z-0 opacity-40 mix-blend-multiply"></canvas>
-        <!-- Onion Skin Next -->
-        <canvas id="onionCanvasNext" class="absolute top-0 left-0 pointer-events-none z-0 opacity-20 mix-blend-multiply"></canvas>
+        <!-- Modo Capa Anterior -->
+        <canvas id="layerPrevCanvas" class="absolute top-0 left-0 pointer-events-none z-0 opacity-35 mix-blend-multiply"></canvas>
         <!-- Main Drawing Canvas -->
         <canvas id="mainCanvas" class="relative z-10 cursor-crosshair"></canvas>
-        <!-- Temporary Shape Preview Canvas -->
+        <!-- Temporary Shape / Selection Canvas -->
         <canvas id="tempCanvas" class="absolute top-0 left-0 pointer-events-none z-20"></canvas>
       </div>
 
-      <!-- Onion Skin Toggle & Options -->
+      <!-- Modo Capa Toggle & Settings -->
       <div class="absolute top-4 right-4 bg-slate-900/90 backdrop-blur border border-slate-800 p-3 rounded-2xl flex flex-col space-y-2 shadow-2xl z-30">
         <div class="flex items-center justify-between space-x-3">
           <div class="flex items-center space-x-2">
             <i data-lucide="layers" class="w-4 h-4 text-indigo-400"></i>
-            <span class="text-xs font-semibold text-slate-200">Papel de Cebolla</span>
+            <span class="text-xs font-semibold text-slate-200">Modo Capa Anterior</span>
           </div>
           <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" id="toggleOnion" class="sr-only peer" checked>
+            <input type="checkbox" id="toggleLayerMode" class="sr-only peer" checked>
             <div class="w-8 h-4 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-indigo-600"></div>
           </label>
         </div>
-
-        <div id="onionSettings" class="flex flex-col space-y-1.5 pt-1 border-t border-slate-800 text-[10px] text-slate-400">
-          <div class="flex items-center justify-between space-x-2">
-            <span>Anterior:</span>
-            <span class="text-xs font-semibold text-red-400">Rojo</span>
-          </div>
-          <div class="flex items-center justify-between space-x-2">
-            <span>Siguiente:</span>
-            <span class="text-xs font-semibold text-emerald-400">Verde</span>
-          </div>
+        <div class="text-[10px] text-slate-400 pt-1 border-t border-slate-800">
+          Muestra el fotograma previo difuminado para guiar tu animación.
         </div>
       </div>
 
@@ -280,11 +257,7 @@
 
   <!-- FOOTER TIMELINE & PLAYBACK -->
   <footer class="h-44 bg-slate-900/90 border-t border-slate-800/80 flex flex-col shrink-0 z-20">
-
-    <!-- Timeline Action Bar -->
     <div class="h-11 bg-slate-950/80 border-b border-slate-800/80 flex items-center justify-between px-4">
-      
-      <!-- Playback Controls -->
       <div class="flex items-center space-x-2">
         <button id="btnPlay" class="flex items-center justify-center w-8 h-8 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg transition shadow-md shadow-indigo-600/30" title="Reproducir / Pausa (Espacio)">
           <i data-lucide="play" class="w-4 h-4 fill-current ml-0.5" id="playIcon"></i>
@@ -301,10 +274,7 @@
         <span class="text-xs text-slate-300 font-mono font-semibold" id="frameCounter">Fotograma: 1 / 1</span>
       </div>
 
-      <!-- Timeline Operations -->
       <div class="flex items-center space-x-3">
-        
-        <!-- Speed (FPS) Control -->
         <div class="flex items-center space-x-2 bg-slate-900 px-2.5 py-1 rounded-lg border border-slate-800">
           <span class="text-xs text-slate-400 font-medium">Velocidad:</span>
           <span id="fpsValue" class="text-xs text-indigo-400 font-mono font-bold w-12 text-center">12 FPS</span>
@@ -313,7 +283,6 @@
 
         <div class="h-4 w-px bg-slate-800"></div>
 
-        <!-- Frame Action Buttons -->
         <button id="btnAddFrame" class="flex items-center space-x-1.5 text-xs font-semibold text-indigo-300 hover:text-white bg-indigo-950/60 border border-indigo-800/60 hover:bg-indigo-900/60 px-3 py-1.5 rounded-lg transition" title="Nuevo Fotograma (N)">
           <i data-lucide="plus" class="w-3.5 h-3.5"></i>
           <span>Nuevo</span>
@@ -330,30 +299,24 @@
     </div>
 
     <!-- Timeline Frames Horizontal Strip -->
-    <div id="timelineContainer" class="flex-1 flex items-center space-x-3 px-4 overflow-x-auto custom-scroll bg-slate-950/60 py-3">
-      <!-- Dynamic Frame Thumbnails rendered here -->
-    </div>
-
+    <div id="timelineContainer" class="flex-1 flex items-center space-x-3 px-4 overflow-x-auto custom-scroll bg-slate-950/60 py-3"></div>
   </footer>
 
   <!-- EXPORT GIF MODAL -->
   <div id="exportModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-lg w-full shadow-2xl flex flex-col items-center">
-      
       <div class="flex items-center space-x-2 mb-1">
         <div class="p-2 bg-indigo-500/20 text-indigo-400 rounded-xl">
           <i data-lucide="film" class="w-6 h-6"></i>
         </div>
         <h3 class="text-lg font-bold text-white">Exportar Animación GIF</h3>
       </div>
-      <p class="text-xs text-slate-400 mb-4 text-center">Genera y descarga un archivo GIF animado listo para compartir o subir a internet.</p>
+      <p class="text-xs text-slate-400 mb-4 text-center">Genera y descarga un archivo GIF animado listo para compartir.</p>
       
-      <!-- Preview Frame -->
       <div class="w-64 h-64 bg-white canvas-bg rounded-xl overflow-hidden border-2 border-slate-700 flex items-center justify-center mb-4 relative shadow-inner">
         <canvas id="previewCanvas" class="w-full h-full object-contain"></canvas>
       </div>
 
-      <!-- Export Progress Bar -->
       <div id="exportProgressContainer" class="w-full mb-4 hidden">
         <div class="flex justify-between text-xs text-slate-400 mb-1">
           <span id="exportStatusLabel">Procesando fotogramas...</span>
@@ -364,7 +327,6 @@
         </div>
       </div>
 
-      <!-- Actions -->
       <div class="flex space-x-3 w-full">
         <button id="btnCloseModal" class="flex-1 py-2.5 text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-xl transition">Cancelar</button>
         <button id="btnGenerateGIF" class="flex-1 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-pink-600 hover:from-indigo-500 hover:to-pink-500 rounded-xl shadow-lg shadow-indigo-600/30 transition flex items-center justify-center space-x-2">
@@ -394,24 +356,27 @@
     let currentTool = 'pen';
     let brushColor = '#000000';
     let brushSize = 5;
-    let enableOnionSkin = true;
+    let enableLayerMode = true;
 
     let isDrawing = false;
     let startX = 0;
     let startY = 0;
 
-    // Canvas elements
+    // Selection box state
+    let selectionBox = null;
+    let isSelecting = false;
+    let isDraggingSelection = false;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+
     const mainCanvas = document.getElementById('mainCanvas');
     const ctx = mainCanvas.getContext('2d', { willReadFrequently: true });
 
-    const onionCanvasPrev = document.getElementById('onionCanvasPrev');
-    const onionCtxPrev = onionCanvasPrev.getContext('2d');
-
-    const onionCanvasNext = document.getElementById('onionCanvasNext');
-    const onionCtxNext = onionCanvasNext.getContext('2d');
+    const layerPrevCanvas = document.getElementById('layerPrevCanvas');
+    const layerPrevCtx = layerPrevCanvas.getContext('2d', { willReadFrequently: true });
 
     const tempCanvas = document.getElementById('tempCanvas');
-    const tempCtx = tempCanvas.getContext('2d');
+    const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
 
     const previewCanvas = document.getElementById('previewCanvas');
     const previewCtx = previewCanvas.getContext('2d');
@@ -420,7 +385,7 @@
     const canvasViewport = document.getElementById('canvasViewport');
 
     function initCanvasDimensions() {
-      [mainCanvas, onionCanvasPrev, onionCanvasNext, tempCanvas, previewCanvas].forEach(c => {
+      [mainCanvas, layerPrevCanvas, tempCanvas, previewCanvas].forEach(c => {
         c.width = CANVAS_WIDTH;
         c.height = CANVAS_HEIGHT;
       });
@@ -483,6 +448,42 @@
       updateFrameCounter();
     }
 
+    function moveFrameLeft(index, e) {
+      e.stopPropagation();
+      if (index <= 0) return;
+      if (selectionBox) applySelectionFloat();
+      
+      const temp = frames[index];
+      frames[index] = frames[index - 1];
+      frames[index - 1] = temp;
+      
+      if (currentFrameIndex === index) currentFrameIndex--;
+      else if (currentFrameIndex === index - 1) currentFrameIndex++;
+
+      saveUndoState();
+      renderCurrentFrame();
+      renderTimeline();
+      updateFrameCounter();
+    }
+
+    function moveFrameRight(index, e) {
+      e.stopPropagation();
+      if (index >= frames.length - 1) return;
+      if (selectionBox) applySelectionFloat();
+
+      const temp = frames[index];
+      frames[index] = frames[index + 1];
+      frames[index + 1] = temp;
+
+      if (currentFrameIndex === index) currentFrameIndex++;
+      else if (currentFrameIndex === index + 1) currentFrameIndex--;
+
+      saveUndoState();
+      renderCurrentFrame();
+      renderTimeline();
+      updateFrameCounter();
+    }
+
     function clearCurrentFrame() {
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
@@ -532,49 +533,33 @@
       document.getElementById('btnRedo').disabled = (historyStep >= historyStack.length - 1);
     }
 
-    /* Rendering Frames & Onion Skin */
+    /* Rendering Frames & Layer Mode */
     function renderCurrentFrame() {
       const img = new Image();
       img.onload = function() {
         ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
         ctx.drawImage(img, 0, 0);
-        renderOnionSkin();
+        renderLayerPrev();
       };
       img.src = frames[currentFrameIndex];
     }
 
-    function renderOnionSkin() {
-      onionCtxPrev.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-      onionCtxNext.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+    function renderLayerPrev() {
+      layerPrevCtx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      if (!enableLayerMode || currentFrameIndex === 0) return;
 
-      if (!enableOnionSkin) return;
-
-      if (currentFrameIndex > 0) {
-        const prevImg = new Image();
-        prevImg.onload = function() {
-          onionCtxPrev.drawImage(prevImg, 0, 0);
-          onionCtxPrev.globalCompositeOperation = 'source-in';
-          onionCtxPrev.fillStyle = 'rgba(239, 68, 68, 0.45)';
-          onionCtxPrev.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-          onionCtxPrev.globalCompositeOperation = 'source-over';
-        };
-        prevImg.src = frames[currentFrameIndex - 1];
-      }
-
-      if (currentFrameIndex < frames.length - 1) {
-        const nextImg = new Image();
-        nextImg.onload = function() {
-          onionCtxNext.drawImage(nextImg, 0, 0);
-          onionCtxNext.globalCompositeOperation = 'source-in';
-          onionCtxNext.fillStyle = 'rgba(34, 197, 94, 0.35)';
-          onionCtxNext.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
-          onionCtxNext.globalCompositeOperation = 'source-over';
-        };
-        nextImg.src = frames[currentFrameIndex + 1];
-      }
+      const prevImg = new Image();
+      prevImg.onload = function() {
+        layerPrevCtx.fillStyle = '#ffffff';
+        layerPrevCtx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+        layerPrevCtx.drawImage(prevImg, 0, 0);
+      };
+      prevImg.src = frames[currentFrameIndex - 1];
     }
 
-    /* Image Import Support (PNG, JPG, JPEG, WEBP, SVG) */
+    /* Image Import */
     function handleImageImport(e) {
       const file = e.target.files[0];
       if (!file) return;
@@ -583,21 +568,13 @@
       reader.onload = function(event) {
         const img = new Image();
         img.onload = function() {
-          // Scale image nicely to fit canvas without distorting aspect ratio
           let w = img.width;
           let h = img.height;
           const maxDim = CANVAS_WIDTH * 0.75;
-          
           if (w > maxDim || h > maxDim) {
-            if (w > h) {
-              h = (h / w) * maxDim;
-              w = maxDim;
-            } else {
-              w = (w / h) * maxDim;
-              h = maxDim;
-            }
+            if (w > h) { h = (h / w) * maxDim; w = maxDim; }
+            else { w = (w / h) * maxDim; h = maxDim; }
           }
-
           const x = (CANVAS_WIDTH - w) / 2;
           const y = (CANVAS_HEIGHT - h) / 2;
 
@@ -608,10 +585,10 @@
         img.src = event.target.result;
       };
       reader.readAsDataURL(file);
-      e.target.value = ''; // Reset input
+      e.target.value = '';
     }
 
-    /* Drawing Operations */
+    /* Drawing & Selection Operations with Smart Transparency */
     function getCanvasCoordinates(e) {
       const rect = mainCanvas.getBoundingClientRect();
       const scaleX = CANVAS_WIDTH / rect.width;
@@ -633,10 +610,24 @@
 
     function startDrawing(e) {
       if (isPlaying) return;
-      isDrawing = true;
       const pos = getCanvasCoordinates(e);
       startX = pos.x;
       startY = pos.y;
+
+      if (currentTool === 'select') {
+        if (selectionBox && isInsideSelection(startX, startY, selectionBox)) {
+          isDraggingSelection = true;
+          dragOffsetX = startX - selectionBox.x;
+          dragOffsetY = startY - selectionBox.y;
+        } else {
+          if (selectionBox) applySelectionFloat();
+          isSelecting = true;
+          selectionBox = { x: startX, y: startY, w: 0, h: 0, canvas: null };
+        }
+        return;
+      }
+
+      isDrawing = true;
 
       if (currentTool === 'bucket') {
         floodFill(Math.round(startX), Math.round(startY), hexToRgba(brushColor));
@@ -658,8 +649,23 @@
     }
 
     function draw(e) {
-      if (!isDrawing || isPlaying) return;
+      if (isPlaying) return;
       const pos = getCanvasCoordinates(e);
+
+      if (currentTool === 'select') {
+        if (isDraggingSelection && selectionBox) {
+          selectionBox.x = pos.x - dragOffsetX;
+          selectionBox.y = pos.y - dragOffsetY;
+          renderSelectionPreview();
+        } else if (isSelecting) {
+          selectionBox.w = pos.x - startX;
+          selectionBox.h = pos.y - startY;
+          renderSelectionPreview();
+        }
+        return;
+      }
+
+      if (!isDrawing) return;
 
       if (currentTool === 'pen' || currentTool === 'eraser') {
         ctx.lineTo(pos.x, pos.y);
@@ -685,6 +691,23 @@
     }
 
     function stopDrawing() {
+      if (currentTool === 'select') {
+        if (isSelecting) {
+          isSelecting = false;
+          normalizeSelectionBox();
+          if (selectionBox.w > 2 && selectionBox.h > 2) {
+            extractSelection();
+          } else {
+            selectionBox = null;
+            tempCtx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+          }
+        }
+        if (isDraggingSelection) {
+          isDraggingSelection = false;
+        }
+        return;
+      }
+
       if (!isDrawing) return;
       isDrawing = false;
 
@@ -694,6 +717,103 @@
         tempCtx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
       }
 
+      saveCurrentFrameState();
+      saveUndoState();
+    }
+
+    function normalizeSelectionBox() {
+      if (selectionBox.w < 0) {
+        selectionBox.x += selectionBox.w;
+        selectionBox.w = Math.abs(selectionBox.w);
+      }
+      if (selectionBox.h < 0) {
+        selectionBox.y += selectionBox.h;
+        selectionBox.h = Math.abs(selectionBox.h);
+      }
+    }
+
+    function isInsideSelection(x, y, box) {
+      return x >= box.x && x <= box.x + box.w && y >= box.y && y <= box.y + box.h;
+    }
+
+    function extractSelection() {
+      const sx = Math.max(0, Math.floor(selectionBox.x));
+      const sy = Math.max(0, Math.floor(selectionBox.y));
+      const sw = Math.min(CANVAS_WIDTH - sx, Math.floor(selectionBox.w));
+      const sh = Math.min(CANVAS_HEIGHT - sy, Math.floor(selectionBox.h));
+
+      if (sw <= 0 || sh <= 0) return;
+
+      selectionBox.x = sx;
+      selectionBox.y = sy;
+      selectionBox.w = sw;
+      selectionBox.h = sh;
+
+      // Obtener los datos de imagen de la selección
+      const imgData = ctx.getImageData(sx, sy, sw, sh);
+      const data = imgData.data;
+
+      // Crear un offscreen canvas para aislar solo los trazos (ignorando el fondo blanco puro)
+      const selCanvas = document.createElement('canvas');
+      selCanvas.width = sw;
+      selCanvas.height = sh;
+      const selCtx = selCanvas.getContext('2d');
+      const targetImgData = selCtx.createImageData(sw, sh);
+      const targetData = targetImgData.data;
+
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i+1];
+        const b = data[i+2];
+        const a = data[i+3];
+
+        // Si el píxel es blanco puro (o prácticamente blanco 250+), lo volvemos transparente
+        // a menos que sea un objeto de color blanco explícito aislado, pero para evitar capturar
+        // el fondo blanco del lienzo, filtramos los píxeles blancos que coinciden con el fondo.
+        if (r > 245 && g > 245 && b > 245) {
+          targetData[i] = 255;
+          targetData[i+1] = 255;
+          targetData[i+2] = 255;
+          targetData[i+3] = 0; // Transparente para la selección
+        } else {
+          targetData[i] = r;
+          targetData[i+1] = g;
+          targetData[i+2] = b;
+          targetData[i+3] = a;
+        }
+      }
+
+      selCtx.putImageData(targetImgData, 0, 0);
+      selectionBox.canvas = selCanvas;
+
+      // Limpiar con blanco el área extraída en el canvas principal
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(sx, sy, sw, sh);
+      saveCurrentFrameState();
+
+      renderSelectionPreview();
+    }
+
+    function renderSelectionPreview() {
+      tempCtx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      if (!selectionBox) return;
+
+      if (selectionBox.canvas) {
+        tempCtx.drawImage(selectionBox.canvas, selectionBox.x, selectionBox.y);
+      }
+
+      tempCtx.strokeStyle = '#6366f1';
+      tempCtx.lineWidth = 1.5;
+      tempCtx.setLineDash([4, 4]);
+      tempCtx.strokeRect(selectionBox.x, selectionBox.y, selectionBox.w, selectionBox.h);
+      tempCtx.setLineDash([]);
+    }
+
+    function applySelectionFloat() {
+      if (!selectionBox || !selectionBox.canvas) return;
+      tempCtx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+      ctx.drawImage(selectionBox.canvas, selectionBox.x, selectionBox.y);
+      selectionBox = null;
       saveCurrentFrameState();
       saveUndoState();
     }
@@ -747,27 +867,47 @@
       return { r: (c >> 16) & 255, g: (c >> 8) & 255, b: c & 255, a: 255 };
     }
 
-    /* Timeline Rendering */
+    /* Timeline Rendering with Move Controls */
     function renderTimeline() {
       timelineContainer.innerHTML = '';
 
       frames.forEach((frameData, index) => {
         const thumbWrapper = document.createElement('div');
-        thumbWrapper.className = `relative shrink-0 w-20 h-20 rounded-xl border-2 cursor-pointer overflow-hidden transition-all flex flex-col items-center justify-center bg-white canvas-bg shadow-md ${index === currentFrameIndex ? 'border-indigo-500 scale-105 ring-2 ring-indigo-500/40 z-10' : 'border-slate-800 opacity-60 hover:opacity-100 hover:border-slate-600'}`;
+        thumbWrapper.className = `relative shrink-0 w-24 h-20 rounded-xl border-2 cursor-pointer overflow-hidden transition-all flex flex-col items-center justify-center bg-white canvas-bg shadow-md ${index === currentFrameIndex ? 'border-indigo-500 scale-105 ring-2 ring-indigo-500/40 z-10' : 'border-slate-800 opacity-60 hover:opacity-100 hover:border-slate-600'}`;
 
         const img = document.createElement('img');
         img.src = frameData;
-        img.className = 'w-full h-full object-contain pointer-events-none';
+        img.className = 'w-full h-full object-contain pointer-events-none absolute inset-0';
         img.id = `thumb-${index}`;
 
+        const overlay = document.createElement('div');
+        overlay.className = 'absolute inset-0 bg-slate-950/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-between px-1 z-20';
+
+        const btnLeft = document.createElement('button');
+        btnLeft.className = `p-1 bg-slate-900/80 hover:bg-indigo-600 text-white rounded transition ${index === 0 ? 'opacity-20 cursor-not-allowed' : ''}`;
+        btnLeft.innerHTML = `<i data-lucide="chevron-left" class="w-3.5 h-3.5"></i>`;
+        btnLeft.title = "Mover fotograma a la izquierda";
+        btnLeft.onclick = (e) => moveFrameLeft(index, e);
+
+        const btnRight = document.createElement('button');
+        btnRight.className = `p-1 bg-slate-900/80 hover:bg-indigo-600 text-white rounded transition ${index === frames.length - 1 ? 'opacity-20 cursor-not-allowed' : ''}`;
+        btnRight.innerHTML = `<i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>`;
+        btnRight.title = "Mover fotograma a la derecha";
+        btnRight.onclick = (e) => moveFrameRight(index, e);
+
+        overlay.appendChild(btnLeft);
+        overlay.appendChild(btnRight);
+
         const frameNum = document.createElement('span');
-        frameNum.className = 'absolute bottom-1 right-1 text-[9px] font-mono font-bold bg-slate-900/90 text-slate-200 px-1.5 py-0.5 rounded-md border border-slate-700/50';
+        frameNum.className = 'absolute bottom-1 right-1 text-[9px] font-mono font-bold bg-slate-900/90 text-slate-200 px-1.5 py-0.5 rounded-md border border-slate-700/50 z-20 pointer-events-none';
         frameNum.innerText = index + 1;
 
         thumbWrapper.appendChild(img);
+        thumbWrapper.appendChild(overlay);
         thumbWrapper.appendChild(frameNum);
 
         thumbWrapper.onclick = () => {
+          if (selectionBox) applySelectionFloat();
           if (isPlaying) stopPlayback();
           currentFrameIndex = index;
           renderCurrentFrame();
@@ -777,6 +917,8 @@
 
         timelineContainer.appendChild(thumbWrapper);
       });
+
+      lucide.createIcons();
     }
 
     function updateThumbnail(index) {
@@ -790,6 +932,7 @@
 
     /* Playback Loop */
     function togglePlayback() {
+      if (selectionBox) applySelectionFloat();
       if (isPlaying) stopPlayback();
       else startPlayback();
     }
@@ -837,11 +980,11 @@
       mainCanvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); });
       mainCanvas.addEventListener('touchend', (e) => { e.preventDefault(); stopDrawing(); });
 
-      // Image Import
       document.getElementById('inputImportImage').addEventListener('change', handleImageImport);
 
       const tools = [
         { id: 'toolPen', name: 'pen' },
+        { id: 'toolSelect', name: 'select' },
         { id: 'toolEraser', name: 'eraser' },
         { id: 'toolBucket', name: 'bucket' },
         { id: 'toolLine', name: 'line' },
@@ -851,6 +994,7 @@
 
       tools.forEach(t => {
         document.getElementById(t.id).addEventListener('click', () => {
+          if (selectionBox && currentTool !== 'select') applySelectionFloat();
           currentTool = t.name;
           tools.forEach(o => {
             const btn = document.getElementById(o.id);
@@ -873,21 +1017,26 @@
         document.getElementById('brushSizeVal').innerText = `${brushSize}px`;
       });
 
-      document.getElementById('btnClearFrame').addEventListener('click', clearCurrentFrame);
-      document.getElementById('toggleOnion').addEventListener('change', (e) => {
-        enableOnionSkin = e.target.checked;
-        renderOnionSkin();
+      document.getElementById('btnClearFrame').addEventListener('click', () => {
+        if (selectionBox) { selectionBox = null; tempCtx.clearRect(0,0,CANVAS_WIDTH,CANVAS_HEIGHT); }
+        clearCurrentFrame();
+      });
+
+      document.getElementById('toggleLayerMode').addEventListener('change', (e) => {
+        enableLayerMode = e.target.checked;
+        renderLayerPrev();
       });
 
       document.getElementById('btnUndo').addEventListener('click', undo);
       document.getElementById('btnRedo').addEventListener('click', redo);
 
-      document.getElementById('btnAddFrame').addEventListener('click', addNewFrame);
-      document.getElementById('btnDuplicateFrame').addEventListener('click', duplicateCurrentFrame);
-      document.getElementById('btnDeleteFrame').addEventListener('click', deleteCurrentFrame);
+      document.getElementById('btnAddFrame').addEventListener('click', () => { if (selectionBox) applySelectionFloat(); addNewFrame(); });
+      document.getElementById('btnDuplicateFrame').addEventListener('click', () => { if (selectionBox) applySelectionFloat(); duplicateCurrentFrame(); });
+      document.getElementById('btnDeleteFrame').addEventListener('click', () => { if (selectionBox) applySelectionFloat(); deleteCurrentFrame(); });
 
       document.getElementById('btnPlay').addEventListener('click', togglePlayback);
       document.getElementById('btnPrevFrame').addEventListener('click', () => {
+        if (selectionBox) applySelectionFloat();
         if (isPlaying) stopPlayback();
         currentFrameIndex = (currentFrameIndex - 1 + frames.length) % frames.length;
         renderCurrentFrame();
@@ -895,6 +1044,7 @@
         updateFrameCounter();
       });
       document.getElementById('btnNextFrame').addEventListener('click', () => {
+        if (selectionBox) applySelectionFloat();
         if (isPlaying) stopPlayback();
         currentFrameIndex = (currentFrameIndex + 1) % frames.length;
         renderCurrentFrame();
@@ -948,10 +1098,14 @@
           addNewFrame();
         } else if (e.key === 'b' || e.key === 'B') {
           document.getElementById('toolPen').click();
+        } else if (e.key === 's' || e.key === 'S') {
+          document.getElementById('toolSelect').click();
         } else if (e.key === 'e' || e.key === 'E') {
           document.getElementById('toolEraser').click();
         } else if (e.key === 'f' || e.key === 'F') {
           document.getElementById('toolBucket').click();
+        } else if (e.key === 'Enter') {
+          if (selectionBox) applySelectionFloat();
         }
       });
     }
@@ -963,8 +1117,9 @@
 
     /* JSON Project Export / Import */
     function exportProjectJSON() {
+      if (selectionBox) applySelectionFloat();
       const projectData = {
-        version: "2.1",
+        version: "2.6",
         width: CANVAS_WIDTH,
         height: CANVAS_HEIGHT,
         fps: fps,
@@ -1008,6 +1163,7 @@
 
     function resetProject() {
       if (confirm('¿Deseas iniciar un nuevo proyecto? Se borrarán los cambios no guardados.')) {
+        if (selectionBox) selectionBox = null;
         frames = [];
         currentFrameIndex = 0;
         historyStack = [];
@@ -1020,6 +1176,7 @@
     let previewModalInterval = null;
 
     function openExportModal() {
+      if (selectionBox) applySelectionFloat();
       if (isPlaying) stopPlayback();
       const modal = document.getElementById('exportModal');
       modal.classList.remove('hidden');
@@ -1056,7 +1213,6 @@
       progressText.innerText = '10%';
       statusLabel.innerText = 'Compilando fotogramas...';
 
-      // Using gifshot robust library for guaranteed web export
       gifshot.createGIF({
         images: frames,
         interval: 1 / fps,
